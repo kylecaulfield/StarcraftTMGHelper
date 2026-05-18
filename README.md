@@ -36,6 +36,29 @@ To build a release APK for an Android tablet:
 flutter build apk --release
 ```
 
+The output APK lives at `build/app/outputs/flutter-apk/app-release.apk`.
+
+## Installing on an Android tablet
+
+GitHub Actions builds a release APK on every push and attaches it both as a workflow artifact and (when you push a `v*` tag) as a GitHub Release asset.
+
+1. Grab the APK:
+   - **Latest build**: open the [Actions tab](../../actions), pick the latest successful `android` run, and download the `starcraft-tmg-helper-<sha>.apk` artifact (GitHub login required; artifacts expire after 90 days).
+   - **Tagged release**: download from the [Releases page](../../releases) — public link, no login needed.
+2. On the tablet, allow installs from your browser / Files app: **Settings → Apps → Special access → Install unknown apps**.
+3. Open the APK from the Files app and install.
+
+To cut a new release:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The workflow will build the APK and create a GitHub Release with it attached.
+
+> The release APK is currently signed with Flutter's debug keys, so Android will warn when sideloading. This is fine for personal use; for Play Store distribution you'd need to set up a real signing config.
+
 ## Notes
 
 - The Android activity is locked to `sensorLandscape`.
