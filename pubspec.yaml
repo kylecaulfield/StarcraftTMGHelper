@@ -12,6 +12,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   wakelock_plus: ^1.2.8
 
+dependency_overrides:
+  package_info_plus: 8.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
