@@ -1,0 +1,24 @@
+name: starcraft_tmg_helper
+description: "A helper app for tracking Control Points, Faction Points, and rounds in Starcraft TMG."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  wakelock_plus: 1.2.8
+
+dependency_overrides:
+  package_info_plus: 8.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
