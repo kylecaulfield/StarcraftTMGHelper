@@ -24,7 +24,8 @@ class StarcraftTmgHelperApp extends StatefulWidget {
 }
 
 class _StarcraftTmgHelperAppState extends State<StarcraftTmgHelperApp> {
-  GameSettings? _settings;
+  GameSettings _lastSettings = GameSettings.defaults();
+  bool _inGame = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +41,17 @@ class _StarcraftTmgHelperAppState extends State<StarcraftTmgHelperApp> {
         ),
         scaffoldBackgroundColor: const Color(0xFF101218),
       ),
-      home: _settings == null
-          ? SettingsScreen(
-              initialSettings: GameSettings.defaults(),
-              onStart: (s) => setState(() => _settings = s),
+      home: _inGame
+          ? GameScreen(
+              settings: _lastSettings,
+              onNewGame: () => setState(() => _inGame = false),
             )
-          : GameScreen(
-              settings: _settings!,
-              onNewGame: () => setState(() => _settings = null),
+          : SettingsScreen(
+              initialSettings: _lastSettings,
+              onStart: (s) => setState(() {
+                _lastSettings = s;
+                _inGame = true;
+              }),
             ),
     );
   }

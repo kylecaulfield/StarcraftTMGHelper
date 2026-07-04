@@ -31,6 +31,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _victoryThreshold = widget.initialSettings.victoryThreshold;
   }
 
+  void _restoreDefaults() {
+    final defaults = GameSettings.defaults();
+    setState(() {
+      _startingControlPoints = defaults.startingControlPoints;
+      _startingFactionPoints = defaults.startingFactionPoints;
+      _startingRound = defaults.startingRound;
+      _victoryThreshold = defaults.victoryThreshold;
+    });
+  }
+
   void _start() {
     widget.onStart(GameSettings(
       startingControlPoints: _startingControlPoints,
@@ -96,7 +106,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'Victory Threshold (Faction Points)',
                     value: _victoryThreshold,
                     min: 1,
-                    step: 1,
                     onChanged: (v) => setState(() => _victoryThreshold = v),
                   ),
                   const SizedBox(height: 32),
@@ -109,6 +118,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Start Game',
                         style: TextStyle(fontSize: 22),
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: _restoreDefaults,
+                    child: const Text('Restore defaults'),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tip: long-press + or − during the game to change a score by 5.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade500,
                     ),
                   ),
                 ],
@@ -125,7 +148,6 @@ class _SettingRow extends StatelessWidget {
   final String label;
   final int value;
   final int min;
-  final int step;
   final ValueChanged<int> onChanged;
 
   const _SettingRow({
@@ -133,7 +155,6 @@ class _SettingRow extends StatelessWidget {
     required this.value,
     required this.min,
     required this.onChanged,
-    this.step = 1,
   });
 
   @override
@@ -149,8 +170,7 @@ class _SettingRow extends StatelessWidget {
             ),
           ),
           IconButton.filledTonal(
-            onPressed:
-                value > min ? () => onChanged((value - step).clamp(min, 999)) : null,
+            onPressed: value > min ? () => onChanged(value - 1) : null,
             iconSize: 28,
             icon: const Icon(Icons.remove),
           ),
@@ -166,7 +186,7 @@ class _SettingRow extends StatelessWidget {
             ),
           ),
           IconButton.filledTonal(
-            onPressed: () => onChanged(value + step),
+            onPressed: () => onChanged(value + 1),
             iconSize: 28,
             icon: const Icon(Icons.add),
           ),

@@ -35,7 +35,12 @@ class PlayerPanel extends StatelessWidget {
             color.withOpacity(0.08),
           ],
         ),
-        border: Border.all(color: color.withOpacity(0.5), width: 2),
+        border: Border.all(
+          color: reachedVictory
+              ? Colors.amber.withOpacity(0.9)
+              : color.withOpacity(0.5),
+          width: reachedVictory ? 3 : 2,
+        ),
       ),
       margin: const EdgeInsets.all(6),
       padding: const EdgeInsets.all(12),
@@ -79,6 +84,7 @@ class PlayerPanel extends StatelessWidget {
                     color: color,
                     onChanged: onFactionChanged,
                     badge: '$factionPoints / $victoryThreshold',
+                    badgeColor: reachedVictory ? Colors.amber.shade700 : null,
                   ),
                 ),
               ],
@@ -96,6 +102,7 @@ class _CounterCard extends StatelessWidget {
   final Color color;
   final ValueChanged<int> onChanged;
   final String? badge;
+  final Color? badgeColor;
 
   const _CounterCard({
     required this.label,
@@ -103,6 +110,7 @@ class _CounterCard extends StatelessWidget {
     required this.color,
     required this.onChanged,
     this.badge,
+    this.badgeColor,
   });
 
   @override
@@ -131,10 +139,10 @@ class _CounterCard extends StatelessWidget {
               if (badge != null) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.3),
+                    color: badgeColor ?? color.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -156,8 +164,10 @@ class _CounterCard extends StatelessWidget {
                   child: _StepButton(
                     icon: Icons.remove,
                     color: color,
-                    onPressed:
-                        value > 0 ? () => onChanged(value - 1) : null,
+                    onPressed: value > 0 ? () => onChanged(value - 1) : null,
+                    onLongPress: value > 0
+                        ? () => onChanged((value - 5).clamp(0, value))
+                        : null,
                   ),
                 ),
                 Expanded(
@@ -181,6 +191,7 @@ class _CounterCard extends StatelessWidget {
                     icon: Icons.add,
                     color: color,
                     onPressed: () => onChanged(value + 1),
+                    onLongPress: () => onChanged(value + 5),
                   ),
                 ),
               ],
@@ -196,11 +207,13 @@ class _StepButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback? onPressed;
+  final VoidCallback? onLongPress;
 
   const _StepButton({
     required this.icon,
     required this.color,
     required this.onPressed,
+    this.onLongPress,
   });
 
   @override
@@ -214,6 +227,7 @@ class _StepButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onPressed,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(16),
           child: Center(
             child: Icon(

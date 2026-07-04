@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'game_settings.dart';
 import 'player_panel.dart';
@@ -38,14 +39,16 @@ class _GameScreenState extends State<GameScreen> {
     _round = widget.settings.startingRound;
   }
 
-  void _confirmReset() async {
+  Future<bool> _confirm({
+    required String title,
+    required String message,
+    required String confirmLabel,
+  }) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Start a new game?'),
-        content: const Text(
-          'This will reset Control Points, Faction Points, and the round counter for both players.',
-        ),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -53,63 +56,104 @@ class _GameScreenState extends State<GameScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('New game'),
+            child: Text(confirmLabel),
           ),
         ],
       ),
     );
-    if (confirmed == true) {
+    return confirmed == true;
+  }
+
+  Future<void> _confirmNewGame() async {
+    final confirmed = await _confirm(
+      title: 'End this game?',
+      message:
+          'This ends the current game and returns to the setup screen. Your setup values will be remembered.',
+      confirmLabel: 'End game',
+    );
+    if (confirmed && mounted) {
       widget.onNewGame();
     }
   }
 
-  void _resetCounters() {
-    setState(_resetState);
+  Future<void> _confirmResetCounters() async {
+    final confirmed = await _confirm(
+      title: 'Reset this game?',
+      message:
+          'Control Points, Faction Points, and the round counter return to their starting values for both players.',
+      confirmLabel: 'Reset game',
+    );
+    if (confirmed && mounted) {
+      setState(_resetState);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final threshold = widget.settings.victoryThreshold;
-    return Scaffold(
-      body: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              flex: 4,
-              child: PlayerPanel(
-                name: 'BLUE',
-                color: const Color(0xFF1E88E5),
-                accentColor: const Color(0xFF64B5F6),
-                controlPoints: _blueControl,
-                factionPoints: _blueFaction,
-                victoryThreshold: threshold,
-                onControlChanged: (v) => setState(() => _blueControl = v),
-                onFactionChanged: (v) => setState(() => _blueFaction = v),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _confirmNewGame();
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: PlayerPanel(
+                  name: 'BLUE',
+                  color: const Color(0xFF1E88E5),
+                  accentColor: const Color(0xFF64B5F6),
+                  controlPoints: _blueControl,
+                  factionPoints: _blueFaction,
+                  victoryThreshold: threshold,
+                  onControlChanged: (v) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _blueControl = v);
+                  },
+                  onFactionChanged: (v) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _blueFaction = v);
+                  },
+                ),
               ),
-            ),
-            Expanded(
-              flex: 2,
-              child: _CenterColumn(
-                round: _round,
-                onRoundChanged: (v) => setState(() => _round = v),
-                onResetCounters: _resetCounters,
-                onNewGame: _confirmReset,
+              Expanded(
+                flex: 2,
+                child: _CenterColumn(
+                  round: _round,
+                  onRoundChanged: (v) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _round = v);
+                  },
+                  onResetCounters: _confirmResetCounters,
+                  onNewGame: _confirmNewGame,
+                ),
               ),
-            ),
-            Expanded(
-              flex: 4,
-              child: PlayerPanel(
-                name: 'RED',
-                color: const Color(0xFFE53935),
-                accentColor: const Color(0xFFEF5350),
-                controlPoints: _redControl,
-                factionPoints: _redFaction,
-                victoryThreshold: threshold,
-                onControlChanged: (v) => setState(() => _redControl = v),
-                onFactionChanged: (v) => setState(() => _redFaction = v),
+              Expanded(
+                flex: 4,
+                child: PlayerPanel(
+                  name: 'RED',
+                  color: const Color(0xFFE53935),
+                  accentColor: const Color(0xFFEF5350),
+                  controlPoints: _redControl,
+                  factionPoints: _redFaction,
+                  victoryThreshold: threshold,
+                  onControlChanged: (v) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _redControl = v);
+                  },
+                  onFactionChanged: (v) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _redFaction = v);
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -170,7 +214,8 @@ class _CenterColumn extends StatelessWidget {
                   const SizedBox(height: 12),
                   _RoundButton(
                     icon: Icons.keyboard_arrow_down,
-                    onPressed: round > 1 ? () => onRoundChanged(round - 1) : null,
+                    onPressed:
+                        round > 1 ? () => onRoundChanged(round - 1) : null,
                   ),
                 ],
               ),
